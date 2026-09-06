@@ -14,7 +14,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +26,12 @@ public class DeploymentWebController {
   private final DeployOrchestratorService orchestrator;
   private final OAuth2AuthorizedClientService authorizedClientService;
 
-  public DeploymentWebController(DeploymentRepository d, ServerRepository s,
-      DeployOrchestratorService o, OAuth2AuthorizedClientService clientService) {
+  public DeploymentWebController(DeploymentRepository d, ServerRepository s, DeployOrchestratorService o,
+      OAuth2AuthorizedClientService cs) {
     deploymentRepo = d;
     serverRepo = s;
     orchestrator = o;
-    this.authorizedClientService = clientService;
+    authorizedClientService = cs;
   }
 
   @GetMapping
@@ -42,28 +41,19 @@ public class DeploymentWebController {
   }
 
   @GetMapping("/new")
-  public String createForm(Model m,
-      @AuthenticationPrincipal OAuth2User oauthUser,
-      Authentication authentication) {
-
+  public String createForm(Model m, @AuthenticationPrincipal OAuth2User oauthUser, Authentication authentication) {
     m.addAttribute("servers", serverRepo.findAll());
-
-    // Safe GitHub fetch - no 500 even if not connected
-    try {z
+    try {
       if (authentication instanceof OAuth2AuthenticationToken oauthToken
           && "github".equals(oauthToken.getAuthorizedClientRegistrationId())) {
-
-        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
-            oauthToken.getAuthorizedClientRegistrationId(),
-            oauthToken.getName());
-
+        OAuth2AuthorizedClient client = authorizedClientService
+            .loadAuthorizedClient(oauthToken.getAuthorizedClientRegistrationId(), oauthToken.getName());
         if (client != null && oauthUser != null) {
           String login = oauthUser.getAttribute("login");
           m.addAttribute("isConnected", true);
           m.addAttribute("isGitHubConnected", true);
           m.addAttribute("connectedUser", login != null ? login : oauthUser.getName());
           m.addAttribute("providerInput", "GITHUB");
-
           String token = client.getAccessToken().getTokenValue();
           RestTemplate rest = new RestTemplate();
           HttpHeaders headers = new HttpHeaders();
@@ -71,28 +61,23 @@ public class DeploymentWebController {
           headers.set("Accept", "application/vnd.github.v3+json");
           headers.set("User-Agent", "OpenCloud-Dashboard");
           HttpEntity<String> entity = new HttpEntity<>(headers);
-
           ResponseEntity<List> response = rest.exchange(
               "https://api.github.com/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member",
               HttpMethod.GET, entity, List.class);
-
           List<Map> repos = response.getBody();
           m.addAttribute("githubRepos", repos);
           System.out.println("GitHub repos fetched: " + (repos != null ? repos.size() : 0));
         }
       }
     } catch (Exception e) {
-      System.out.println("GitHub fetch failed, showing manual input: " + e.getMessage());
-      // Don't crash - just show manual URL input
+      System.out.println("GitHub fetch failed: " + e.getMessage());
     }
-
     return "deployments/new";
   }
 
   @PostMapping("/new")
-  public String create(@RequestParam String repoUrl, @RequestParam String provider,
-      @RequestParam String serverId, @RequestParam String buildType,
-      @RequestParam(required = false) String envVars) {
+  public String create(@RequestParam String repoUrl, @RequestParam String provider, @RequestParam String serverId,
+      @RequestParam String buildType, @RequestParam(required = false) String envVars) {
     Deployment d = new Deployment();
     d.setName(repoUrl.substring(repoUrl.lastIndexOf('/') + 1).replace(".git", ""));
     d.setRepoUrl(repoUrl);

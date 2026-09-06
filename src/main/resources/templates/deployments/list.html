@@ -251,13 +251,58 @@
         });
       });
 
-      // === FIXED: REAL REDIRECT TO OAUTH ===
+
+      // github other code
       document.getElementById('githubBtn').addEventListener('click', function (e) {
         e.stopPropagation();
+
         selectCard(document.querySelector('[data-provider="GITHUB"]'));
-        this.innerHTML = 'Redirecting to GitHub...';
-        window.location.href = '/oauth2/authorization/github';
+
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = 'Connecting... <i class="ri-loader-4-line ri-spin"></i>';
+
+        const width = 700;
+        const height = 800;
+
+        const left = Math.max(0, (window.screen.width - width) / 2);
+        const top = Math.max(0, (window.screen.height - height) / 2);
+
+        const oauthWindow = window.open(
+          '/oauth2/authorization/github',
+          'opencloud-github-oauth',
+          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+
+        if (!oauthWindow) {
+          btn.disabled = false;
+          btn.innerHTML = 'Connect GitHub <i class="ri-external-link-line"></i>';
+
+          alert('GitHub authorization popup was blocked. Please allow popups for this site.');
+          return;
+        }
+
+        const checkOAuth = setInterval(function () {
+
+          if (oauthWindow.closed) {
+            clearInterval(checkOAuth);
+
+            // OAuth window has finished.
+            // Reload the deployment page so Spring can show
+            // the authenticated GitHub account and repositories.
+            window.location.reload();
+          }
+
+        }, 700);
       });
+
+      // === FIXED: REAL REDIRECT TO OAUTH ===
+      // document.getElementById('githubBtn').addEventListener('click', function (e) {
+      //   e.stopPropagation();
+      //   selectCard(document.querySelector('[data-provider="GITHUB"]'));
+      //   this.innerHTML = 'Redirecting to GitHub...';
+      //   window.location.href = '/oauth2/authorization/github';
+      // });
 
       document.getElementById('bitbucketBtn').addEventListener('click', function (e) {
         e.stopPropagation();
