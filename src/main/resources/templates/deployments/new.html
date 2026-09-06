@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout('New Deployment', ~{::content})}">
+
+<div th:fragment="content">
+
+    <div style="max-width:900px;margin:0 auto">
+
+        <h1 style="margin-bottom:6px">New Deployment</h1>
+        <p style="color:#6b7280;margin-bottom:24px">
+            Connect your Git provider and select a repository to deploy.
+        </p>
+
+        <form th:action="@{/deployments/new}" method="post">
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <input type="hidden" name="provider" value="GITHUB" />
+
+            <!-- Repository -->
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+
+                <label style="font-weight:600;font-size:14px;display:block;margin-bottom:8px">
+                    Repository URL *
+                </label>
+
+                <select name="repoUrl" id="repoSelect" required
+                    style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;background:#fff;font-size:14px">
+
+                    <option value="">Select a GitHub repository</option>
+
+                    <option th:each="repo : ${githubRepos}" th:value="${repo['html_url']}"
+                        th:text="${repo['full_name']}">
+                    </option>
+
+                </select>
+
+                <div th:if="${isGitHubConnected}" style="margin-top:10px;color:#059669;font-size:13px">
+
+                    <i class="ri-github-fill"></i>
+                    Connected as
+                    <strong th:text="${connectedUser}"></strong>
+                </div>
+
+                <div th:unless="${isGitHubConnected}" style="margin-top:10px;color:#6b7280;font-size:13px">
+
+                    Connect GitHub first to load your repositories.
+                </div>
+
+            </div>
+
+            <!-- Server -->
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-top:16px">
+
+                <label style="font-weight:600;font-size:14px;display:block;margin-bottom:8px">
+                    Server *
+                </label>
+
+                <select name="serverId" required
+                    style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px">
+
+                    <option value="">Select server</option>
+
+                    <option th:each="server : ${servers}" th:value="${server.id}" th:text="${server.name}">
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- Build type -->
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-top:16px">
+
+                <label style="font-weight:600;font-size:14px;display:block;margin-bottom:8px">
+                    Build Type *
+                </label>
+
+                <select name="buildType" required
+                    style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px">
+
+                    <option value="">Select build type</option>
+                    <option value="NODE">Node.js</option>
+                    <option value="JAVA">Java</option>
+                    <option value="PYTHON">Python</option>
+                    <option value="STATIC">Static</option>
+
+                </select>
+
+            </div>
+
+            <div style="margin-top:20px;text-align:right">
+                <button type="submit"
+                    style="background:#C9190B;color:#fff;border:0;border-radius:8px;padding:12px 22px;font-weight:600;cursor:pointer">
+                    Continue
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</html>

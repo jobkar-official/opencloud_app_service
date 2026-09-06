@@ -1,5 +1,6 @@
 
 package dev.opencloud.infrastructure.grpc;
+
 import dev.opencloud.application.service.DeployOrchestratorService;
 import dev.opencloud.domain.entity.Deployment;
 import dev.opencloud.domain.entity.Server;
@@ -15,13 +16,14 @@ public class DeployGrpcService extends DeployServiceGrpc.DeployServiceImplBase {
 
   private final DeployOrchestratorService orchestrator;
   private final ServerRepository serverRepo;
-  public DeployGrpcService(DeployOrchestratorService o, ServerRepository serverRepo){
-    this.orchestrator=o;
-    this.serverRepo=serverRepo;
+
+  public DeployGrpcService(DeployOrchestratorService o, ServerRepository serverRepo) {
+    this.orchestrator = o;
+    this.serverRepo = serverRepo;
   }
 
   @Override
-  public void registerAgent(RegisterAgentRequest req, StreamObserver<RegisterAgentResponse> obs){
+  public void registerAgent(RegisterAgentRequest req, StreamObserver<RegisterAgentResponse> obs) {
     Server s = serverRepo.findById(req.getServerId()).orElse(null);
     if (s != null) {
       s.setStatus(Server.Status.CONNECTED);
@@ -38,7 +40,7 @@ public class DeployGrpcService extends DeployServiceGrpc.DeployServiceImplBase {
   }
 
   @Override
-  public void heartbeat(HeartbeatRequest req, StreamObserver<HeartbeatResponse> obs){
+  public void heartbeat(HeartbeatRequest req, StreamObserver<HeartbeatResponse> obs) {
     serverRepo.findById(req.getServerId()).ifPresent(s -> {
       s.setLastHeartbeat(Instant.now());
       if (s.getStatus() != Server.Status.CONNECTED) {
@@ -51,18 +53,19 @@ public class DeployGrpcService extends DeployServiceGrpc.DeployServiceImplBase {
   }
 
   @Override
-  public void pullDeployment(PullDeploymentRequest req, StreamObserver<PullDeploymentResponse> obs){
+  public void pullDeployment(PullDeploymentRequest req, StreamObserver<PullDeploymentResponse> obs) {
     Deployment d = orchestrator.pollForServer(req.getServerId());
-    if(d==null){
+    if (d == null) {
       obs.onNext(PullDeploymentResponse.newBuilder().setHasDeployment(false).build());
     } else {
       var b = PullDeploymentResponse.newBuilder()
-        .setHasDeployment(true)
-        .setDeploymentId(d.getId())
-        .setRepoUrl(d.getRepoUrl())
-        .setCommitSha(d.getCommitSha()!=null?d.getCommitSha():"HEAD")
-        .setBuildType(d.getBuildType().name());
-      if(d.getEnvVars()!=null) b.putAllEnvVars(d.getEnvVars().stream().collect(Collectors.toMap(ev->ev.getKey(), ev->ev.getValue())));
+          .setHasDeployment(true)
+          .setDeploymentId(d.getId())
+          .setRepoUrl(d.getRepoUrl())
+          .setCommitSha(d.getCommitSha() != null ? d.getCommitSha() : "HEAD")
+          .setBuildType(d.getBuildType().name());
+      if (d.getEnvVars() != null)
+        b.putAllEnvVars(d.getEnvVars().stream().collect(Collectors.toMap(ev -> ev.getKey(), ev -> ev.getValue())));
       obs.onNext(b.build());
       orchestrator.ackPulled(req.getServerId());
     }
@@ -70,7 +73,7 @@ public class DeployGrpcService extends DeployServiceGrpc.DeployServiceImplBase {
   }
 
   @Override
-  public void reportDeployStatus(DeployStatusRequest req, StreamObserver<DeployStatusResponse> obs){
+  public void reportDeployStatus(DeployStatusRequest req, StreamObserver<DeployStatusResponse> obs) {
     orchestrator.reportStatus(req.getDeploymentId(), req.getStage(), req.getMessage(), req.getHealthOk());
     obs.onNext(DeployStatusResponse.newBuilder().setAcknowledged(true).build());
     obs.onCompleted();

@@ -81,8 +81,13 @@
         </div>
 
         <label style="font-weight:600;font-size:13px">Repository URL *</label>
-        <input name="repoUrl" id="repoUrlInput" placeholder="https://github.com/org/repo" required
-          style="margin-top:6px;padding:12px;border:1px solid #e5e7eb;border-radius:10px;width:100%" />
+
+        <select name="repoUrl" id="repoUrlInput" required>
+          <option value="">Select a repository</option>
+
+          <option th:each="repo : ${githubRepos}" th:value="${repo['html_url']}" th:text="${repo['full_name']}">
+          </option>
+        </select>
         <div style="font-size:11.5px;color:#6b7280;margin-top:8px;display:flex;gap:6px"><i
             class="ri-information-line"></i> After connecting, we will auto-list your repos. Webhook for CI/CD will be
           registered.</div>
@@ -253,7 +258,9 @@
 
 
       // github other code
+      // GitHub OAuth
       document.getElementById('githubBtn').addEventListener('click', function (e) {
+        e.preventDefault();
         e.stopPropagation();
 
         selectCard(document.querySelector('[data-provider="GITHUB"]'));
@@ -282,20 +289,29 @@
           return;
         }
 
-        const checkOAuth = setInterval(function () {
+        // Wait for successful OAuth message from popup
+        window.addEventListener('message', function githubOAuthMessage(event) {
 
-          if (oauthWindow.closed) {
-            clearInterval(checkOAuth);
-
-            // OAuth window has finished.
-            // Reload the deployment page so Spring can show
-            // the authenticated GitHub account and repositories.
-            window.location.reload();
+          // Security check: only accept messages from this application
+          if (event.origin !== window.location.origin) {
+            return;
           }
 
-        }, 700);
-      });
+          if (event.data && event.data.type === 'GITHUB_CONNECTED') {
 
+            window.removeEventListener('message', githubOAuthMessage);
+
+            if (!oauthWindow.closed) {
+              oauthWindow.close();
+            }
+
+            // Reload the deployment page.
+            // Backend will now detect GitHub authentication
+            // and load the user's repositories.
+            window.location.reload();
+          }
+        });
+      });
       // === FIXED: REAL REDIRECT TO OAUTH ===
       // document.getElementById('githubBtn').addEventListener('click', function (e) {
       //   e.stopPropagation();
