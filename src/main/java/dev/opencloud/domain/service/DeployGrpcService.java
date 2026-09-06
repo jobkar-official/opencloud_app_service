@@ -1,26 +1,22 @@
 
-package dev.opencloud.infrastructure.grpc;
+package dev.opencloud.domain.service;
 
-import dev.opencloud.application.service.DeployOrchestratorService;
 import dev.opencloud.domain.entity.Deployment;
 import dev.opencloud.domain.entity.Server;
 import dev.opencloud.domain.repository.ServerRepository;
 import dev.opencloud.grpc.*;
 import io.grpc.stub.StreamObserver;
+import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
 @GrpcService
+@RequiredArgsConstructor
 public class DeployGrpcService extends DeployServiceGrpc.DeployServiceImplBase {
 
   private final DeployOrchestratorService orchestrator;
   private final ServerRepository serverRepo;
-
-  public DeployGrpcService(DeployOrchestratorService o, ServerRepository serverRepo) {
-    this.orchestrator = o;
-    this.serverRepo = serverRepo;
-  }
 
   @Override
   public void registerAgent(RegisterAgentRequest req, StreamObserver<RegisterAgentResponse> obs) {

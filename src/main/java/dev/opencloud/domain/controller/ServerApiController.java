@@ -1,20 +1,19 @@
 
-package dev.opencloud.presentation.api;
+package dev.opencloud.domain.controller;
 
 import dev.opencloud.domain.entity.Server;
 import dev.opencloud.domain.repository.ServerRepository;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/servers")
+@RequiredArgsConstructor
 public class ServerApiController {
   private final ServerRepository repo;
-
-  public ServerApiController(ServerRepository r) {
-    repo = r;
-  }
 
   @GetMapping
   public List<Server> list() {

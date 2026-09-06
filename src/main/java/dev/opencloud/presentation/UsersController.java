@@ -1,4 +1,4 @@
-package dev.opencloud.presentation.web;
+package dev.opencloud.presentation;
 
 import dev.opencloud.domain.entity.User;
 import dev.opencloud.domain.repository.UserRepository;
@@ -45,7 +45,8 @@ public class UsersController {
   @PostMapping("/{id}/permission")
   public String changePermission(@PathVariable String id, @RequestParam String role) {
     userRepo.findById(id).ifPresent(u -> {
-      if (u.getRole() == User.Role.OWNER) return;
+      if (u.getRole() == User.Role.OWNER)
+        return;
       u.setRole(User.Role.valueOf(role));
       userRepo.save(u);
     });
@@ -55,7 +56,8 @@ public class UsersController {
   @PostMapping("/{id}/remove")
   public String remove(@PathVariable String id) {
     userRepo.findById(id).ifPresent(u -> {
-      if (u.getRole() == User.Role.OWNER) return;
+      if (u.getRole() == User.Role.OWNER)
+        return;
       u.setStatus(User.Status.CLOSED);
       userRepo.save(u);
     });

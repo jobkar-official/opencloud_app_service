@@ -1,4 +1,4 @@
-package dev.opencloud.presentation.web;
+package dev.opencloud.presentation;
 
 import dev.opencloud.domain.repository.UserRepository;
 import org.springframework.security.core.Authentication;

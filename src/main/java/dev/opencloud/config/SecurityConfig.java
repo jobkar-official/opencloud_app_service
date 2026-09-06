@@ -14,52 +14,52 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
+        private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
 
-    @Bean
-    PasswordEncoder encoder() {
-        return new BCryptPasswordEncoder(12);
-    }
+        @Bean
+        PasswordEncoder encoder() {
+                return new BCryptPasswordEncoder(12);
+        }
 
-    @Bean
-    UserDetailsService userDetailsService(UserRepository repo) {
-        return username -> repo.findByEmail(username)
-                .map(u -> User.withUsername(u.getEmail())
-                        .password(u.getPasswordHash())
-                        .roles(u.getRole().name())
-                        .build())
-                .orElseThrow(() -> new UsernameNotFoundException(username));
-    }
+        @Bean
+        UserDetailsService userDetailsService(UserRepository repo) {
+                return username -> repo.findByEmail(username)
+                                .map(u -> User.withUsername(u.getEmail())
+                                                .password(u.getPasswordHash())
+                                                .roles(u.getRole().name())
+                                                .build())
+                                .orElseThrow(() -> new UsernameNotFoundException(username));
+        }
 
-    @Bean
-    SecurityFilterChain filter(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(a -> a
-                        .requestMatchers(
-                                "/login",
-                                "/css/**",
-                                "/js/**",
-                                "/api/v1/**",
-                                "/grpc/**",
-                                "/oauth2/**",
-                                "/login/oauth2/**")
-                        .permitAll()
-                        .anyRequest().authenticated())
+        @Bean
+        SecurityFilterChain filter(HttpSecurity http) throws Exception {
+                http
+                                .authorizeHttpRequests(a -> a
+                                                .requestMatchers(
+                                                                "/login",
+                                                                "/css/**",
+                                                                "/js/**",
+                                                                "/api/v1/**",
+                                                                "/grpc/**",
+                                                                "/oauth2/**",
+                                                                "/login/oauth2/**")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
 
-                .formLogin(f -> f
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/dashboard", true))
+                                .formLogin(f -> f
+                                                .loginPage("/login")
+                                                .defaultSuccessUrl("/dashboard", true))
 
-                .oauth2Login(o -> o
-                        .loginPage("/login")
-                        .successHandler(oauth2LoginSuccessHandler))
+                                .oauth2Login(o -> o
+                                                .loginPage("/login")
+                                                .successHandler(oauth2LoginSuccessHandler))
 
-                .logout(l -> l
-                        .logoutSuccessUrl("/login?logout"))
+                                .logout(l -> l
+                                                .logoutSuccessUrl("/login?logout"))
 
-                .csrf(c -> c
-                        .ignoringRequestMatchers("/api/v1/**"));
+                                .csrf(c -> c
+                                                .ignoringRequestMatchers("/api/v1/**"));
 
-        return http.build();
-    }
+                return http.build();
+        }
 }

@@ -1,5 +1,5 @@
 
-package dev.opencloud.application.service;
+package dev.opencloud.domain.service;
 
 import dev.opencloud.domain.entity.*;
 import dev.opencloud.domain.repository.*;
@@ -15,9 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @RequiredArgsConstructor
 public class DeployOrchestratorService {
+
   private final DeploymentRepository deploymentRepo;
   private final ServerRepository serverRepo;
-  // in-memory queue for VPS agent to pull (persisted status in DB)
   private final Map<String, Deployment> pendingDeployments = new ConcurrentHashMap<>();
 
   @Transactional
@@ -46,7 +46,6 @@ public class DeployOrchestratorService {
           v.setStatus(DeployVersion.Status.ACTIVE);
           v.setArtifactPath("/opt/opencloud/snapshots/" + d.getId() + "/" + UUID.randomUUID() + ".tar.gz");
           d.getVersions().add(0, v);
-          // keep last 3
           if (d.getVersions().size() > 3)
             d.getVersions().subList(3, d.getVersions().size()).clear();
           pendingDeployments.remove(d.getServer().getId());
@@ -63,12 +62,10 @@ public class DeployOrchestratorService {
   }
 
   private void autoRollback(Deployment d) {
-    // find last SUCCESS version
     d.getVersions().stream()
         .filter(v -> v.getStatus() == DeployVersion.Status.SUCCESS || v.getStatus() == DeployVersion.Status.ACTIVE)
         .findFirst().ifPresent(lastGood -> {
           d.setStatus(Deployment.Status.ROLLED_BACK);
-          // queue rollback as new pending
           pendingDeployments.put(d.getServer().getId(), d);
         });
   }

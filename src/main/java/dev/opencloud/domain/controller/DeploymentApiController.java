@@ -1,23 +1,22 @@
 
-package dev.opencloud.presentation.api;
+package dev.opencloud.domain.controller;
 
-import dev.opencloud.application.service.DeployOrchestratorService;
 import dev.opencloud.domain.entity.Deployment;
 import dev.opencloud.domain.repository.DeploymentRepository;
+import dev.opencloud.domain.service.DeployOrchestratorService;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/deployments")
+@RequiredArgsConstructor
 public class DeploymentApiController {
+
   private final DeploymentRepository repo;
   private final DeployOrchestratorService orchestrator;
-
-  public DeploymentApiController(DeploymentRepository r, DeployOrchestratorService o) {
-    repo = r;
-    orchestrator = o;
-  }
 
   @GetMapping
   public List<Deployment> list() {
