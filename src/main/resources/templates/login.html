@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Log in · OpenCloud</title>
+
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css" />
+</head>
+
+<body class="login-body">
+
+    <!-- Animated OpenCloud background -->
+    <div class="login-bg-animation" aria-hidden="true">
+        <div class="cloud-watermark cloud-1">
+            <i class="ri-cloud-line"></i>
+        </div>
+
+        <div class="cloud-watermark cloud-2">
+            <i class="ri-cloud-line"></i>
+        </div>
+
+        <div class="cloud-watermark cloud-3">
+            <i class="ri-cloud-line"></i>
+        </div>
+
+        <div class="cloud-watermark cloud-4">
+            <i class="ri-cloud-line"></i>
+        </div>
+
+        <div class="cloud-watermark cloud-5">
+            <i class="ri-cloud-line"></i>
+        </div>
+    </div>
+
+    <div class="login-wrap">
+
+        <div class="login-brand">
+            <i class="ri-cloud-line"></i>
+            <span>OpenCloud</span>
+        </div>
+
+        <div class="login-card">
+
+            <h1>Log in to your account</h1>
+
+            <p class="login-sub">
+                Deploy and manage your infrastructure
+            </p>
+
+            <div th:if="${param.error}" class="login-alert">
+                <i class="ri-error-warning-line"></i>
+                <span>Invalid email or password.</span>
+            </div>
+
+            <form th:action="@{/login}" method="post">
+
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <label for="username">Email address</label>
+
+                <input id="username" name="username" type="email" autocomplete="username" required="required" />
+
+                <label for="password">Password</label>
+
+                <input id="password" name="password" type="password" autocomplete="current-password"
+                    required="required" />
+
+                <button type="submit" class="btn btn-login" style="width:100%;justify-content:center;margin-top:6px">
+
+                    <i class="ri-login-box-line"></i>
+                    Sign in
+
+                </button>
+
+            </form>
+
+            <div class="login-divider">
+                <span>or</span>
+            </div>
+
+            <button type="button" class="btn btn-ghost" style="width:100%;justify-content:center">
+
+                <i class="ri-google-fill"></i>
+                Continue with Google
+
+            </button>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

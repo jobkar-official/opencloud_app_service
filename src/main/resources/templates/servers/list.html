@@ -1,0 +1,338 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout('Servers', ~{::content})}">
+<div th:fragment="content">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <p style="color:var(--muted);margin:0;max-width:60ch">Servers running the OpenCloud gRPC agent. Deployments run on
+      one of these.</p>
+    <button type="button" id="openConnectBtn" class="btn btn-primary">
+      <i class="ri-add-line"></i> Connect Server
+    </button>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card" th:each="s : ${servers}">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div>
+          <a th:href="@{'/servers/' + ${s.id}}" style="font-weight:700;font-size:16px;color:var(--text)"
+            th:text="${s.name}">prod-us-east-1</a>
+          <div class="mono" style="color:var(--muted);font-size:12.5px;margin-top:2px"
+            th:text="${s.host} + ':' + ${s.sshPort}">3.85.12.44:22</div>
+        </div>
+        <span class="badge"
+          th:classappend="${s.status?.name() == 'CONNECTED' ? 'badge-live' : (s.status?.name() == 'CONNECTING' ? 'badge-building' : 'badge-failed')}"
+          th:text="${s.status != null ? s.status : 'DISCONNECTED'}">CONNECTED</span>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:14px;font-size:13px;color:var(--muted);flex-wrap:wrap">
+        <span th:if="${s.osInfo != null}" th:text="${s.osInfo}">Ubuntu 22.04</span>
+        <span th:if="${s.agentVersion != null}"><i class="ri-cpu-line"></i> agent <span
+            th:text="${s.agentVersion}">v1.0.0</span></span>
+        <span th:if="${s.lastHeartbeat != null}" style="color:#3e8635"><i class="ri-radio-line"></i> last heartbeat
+          <span th:text="${s.lastHeartbeat}">2026-09-05T03:00:00Z</span></span>
+      </div>
+      <div
+        style="display:flex;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <span style="font-size:12.5px;color:var(--muted)" th:text="${s.totalDeployments} + ' deployment(s)'">2
+          deployment(s)</span>
+        <div style="display:flex;gap:12px">
+          <a th:if="${s.status?.name() != 'CONNECTED'}" href="#" class="install-link" th:data-id="${s.id}"
+            th:data-host="${s.host}" th:data-name="${s.name}"
+            style="font-size:12.5px;font-weight:500;color:#f0ab00">Install Agent &rarr;</a>
+          <a th:href="@{'/servers/' + ${s.id}}" style="font-size:12.5px;font-weight:500">View details &rarr;</a>
+        </div>
+      </div>
+    </div>
+    <div th:if="${#lists.isEmpty(servers)}" class="card" style="text-align:center;color:var(--muted);padding:40px">No
+      servers connected yet. Click "Connect Server" to add your first one.</div>
+  </div>
+
+  <!-- STEP 1 MODAL - 2 CARD SELECTION - UPDATED WITH GREEN/RED CHIPS -->
+  <div id="connectServerModal"
+    style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.65);align-items:center;justify-content:center;z-index:9999;padding:16px">
+    <div class="card" style="width:960px;max-width:96vw;max-height:92vh;overflow:auto;padding:22px">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px">
+        <div>
+          <h3 style="margin:0;font-size:18px">Connect a server</h3>
+          <p style="font-size:12.5px;color:var(--muted);margin:6px 0 0;max-width:65ch">Choose how you want to connect.
+            Your VPS stays yours. Agent talks to control plane via secure outbound gRPC :9090</p>
+        </div>
+        <button type="button" id="closeConnectBtn"
+          style="background:none;border:1px solid var(--border);border-radius:8px;width:32px;height:32px;display:grid;place-items:center;cursor:pointer;font-size:20px;line-height:1">&times;</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:18px;margin-top:20px" class="connect-grid">
+        <!-- CARD 1: SSH ROOT - NOT RECOMMENDED / NOT SECURE -->
+        <div
+          style="border:1.5px solid #fecaca;border-radius:14px;padding:16px;display:flex;flex-direction:column;background:#fff;position:relative;opacity:.92">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <div
+              style="width:38px;height:38px;border-radius:10px;background:#fef2f2;display:grid;place-items:center;color:#dc2626">
+              <i class="ri-terminal-box-line" style="font-size:20px"></i>
+            </div>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:14px">Connect via SSH</div>
+              <div style="font-size:11.5px;color:#991b1b">Root access required</div>
+            </div>
+          </div>
+          <div
+            style="display:inline-flex;align-items:center;gap:6px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:5px 10px;border-radius:20px;font-size:10.5px;font-weight:700;letter-spacing:.2px;width:fit-content;margin-bottom:14px">
+            <span style="width:6px;height:6px;background:#dc2626;border-radius:50%;display:inline-block"></span>
+            <i class="ri-alarm-warning-line"></i> NOT RECOMMENDED • LESS SECURE
+          </div>
+
+          <form th:action="@{/servers}" method="post" style="display:flex;flex-direction:column;flex:1">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" name="connectMode" value="SSH_ROOT" />
+            <label>Label</label>
+            <input name="name" placeholder="e.g. prod-mumbai-1" required />
+            <label style="margin-top:10px">Host / IP</label>
+            <input name="host" placeholder="139.59.42.101" required />
+            <div style="display:grid;grid-template-columns:85px 1fr;gap:10px;margin-top:10px">
+              <div><label>SSH port</label><input name="sshPort" type="number" value="22" /></div>
+              <div><label>SSH username</label><input name="username" value="root" /></div>
+            </div>
+            <label style="margin-top:10px">Authentication</label>
+            <select name="authType" id="authType"
+              style="width:100%;padding:9px;border:1px solid var(--border);border-radius:8px;background:#fff">
+              <option value="PASSWORD">Password</option>
+              <option value="KEY">SSH Private Key</option>
+            </select>
+            <div id="passwordField" style="margin-top:10px">
+              <input name="password" type="password" placeholder="root password" />
+            </div>
+            <div id="keyField" style="margin-top:10px;display:none">
+              <textarea name="privateKey" rows="4" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+                style="width:100%;resize:vertical;padding:8px;border:1px solid var(--border);border-radius:8px;font-family:monospace;font-size:12px"></textarea>
+            </div>
+            <div
+              style="margin-top:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 10px;display:flex;gap:8px">
+              <i class="ri-error-warning-line" style="color:#dc2626;margin-top:1px"></i>
+              <div style="font-size:11px;color:#7f1d1d;line-height:1.4"><b>Why not recommended?</b> Needs inbound port
+                22
+                open, fails if password auth disabled, you share root creds.</div>
+            </div>
+            <div style="margin-top:auto;padding-top:16px">
+              <button type="submit" class="btn"
+                style="width:100%;justify-content:center;padding:10px;background:#fff;border-color:#fecaca;color:#991b1b">
+                <i class="ri-login-box-line"></i> Connect via SSH
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- CARD 2: MANUAL AGENT - RECOMMENDED HIGHLY SECURE - GREEN CHIP -->
+        <div
+          style="border:2px solid #16a34a;border-radius:14px;padding:16px;display:flex;flex-direction:column;background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);position:relative;box-shadow:0 8px 30px rgba(22,163,74,.15)">
+          <div
+            style="position:absolute;top:-11px;right:16px;background:#16a34a;color:#fff;font-size:10px;font-weight:800;letter-spacing:.6px;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px">
+            <i class="ri-shield-check-fill"></i> MOST SECURE
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <div
+              style="width:40px;height:40px;border-radius:11px;background:#16a34a;display:grid;place-items:center;color:#fff;box-shadow:0 4px 12px rgba(22,163,74,.3)">
+              <i class="ri-download-cloud-2-fill" style="font-size:22px"></i>
+            </div>
+            <div style="flex:1">
+              <div style="font-weight:800;font-size:14.5px;color:#14532d">Install Agent Manually</div>
+              <div style="font-size:11.5px;color:#15803d;font-weight:500">Outbound only • No root sharing</div>
+            </div>
+          </div>
+          <div
+            style="display:inline-flex;align-items:center;gap:6px;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:.3px;width:fit-content;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)">
+            <span
+              style="width:7px;height:7px;background:#16a34a;border-radius:50%;display:inline-block;box-shadow:0 0 0 3px #bbf7d0;animation:pulse 2s infinite"></span>
+            <i class="ri-verified-badge-fill"></i> RECOMMENDED • HIGHLY SECURE
+          </div>
+
+          <form th:action="@{/servers}" method="post" style="display:flex;flex-direction:column;flex:1">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" name="connectMode" value="AGENT_MANUAL" />
+            <label style="font-weight:600">Server Label *</label>
+            <input name="name" placeholder="e.g. prod-mumbai-1" required style="border-color:#86efac" />
+            <div style="font-size:11px;color:#15803d;margin-top:5px;display:flex;gap:4px"><i
+                class="ri-information-line"></i> Hardware, OS, CPU/RAM auto-detected after agent connects</div>
+            <label style="margin-top:14px">Host / IP <span
+                style="font-weight:400;color:var(--muted)">(optional)</span></label>
+            <input name="host" placeholder="Auto-detected: 139.59.42.101" />
+            <label style="margin-top:10px">SSH port <span style="font-weight:400;color:var(--muted)">(for
+                display)</span></label>
+            <input name="sshPort" type="number" value="22" />
+            <input type="hidden" name="username" value="root" />
+
+            <div style="margin-top:14px;background:#0f172a;border-radius:10px;padding:12px;border:1px solid #1e293b">
+              <div
+                style="font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:#4ade80;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                <i class="ri-lock-2-fill"></i> Why this is highly secure & reliable
+              </div>
+              <div style="display:grid;gap:8px">
+                <div style="display:flex;gap:8px;font-size:12px;color:#e2e8f0"><i class="ri-check-line"
+                    style="color:#4ade80;font-weight:700"></i><span><b style="color:#fff">No inbound ports</b> - Agent
+                    dials out to :9090 via gRPC+TLS</span></div>
+                <div style="display:flex;gap:8px;font-size:12px;color:#e2e8f0"><i class="ri-check-line"
+                    style="color:#4ade80"></i><span><b style="color:#fff">No root sharing</b> - Unique token per
+                    server</span></div>
+                <div style="display:flex;gap:8px;font-size:12px;color:#e2e8f0"><i class="ri-check-line"
+                    style="color:#4ade80"></i><span><b style="color:#fff">Auto hardware sync</b> - OS, CPU, RAM, Disk,
+                    IP</span></div>
+                <div style="display:flex;gap:8px;font-size:12px;color:#e2e8f0"><i class="ri-check-line"
+                    style="color:#4ade80"></i><span><b style="color:#fff">Works behind firewall</b> - Outbound
+                    only</span></div>
+              </div>
+            </div>
+
+            <div style="margin-top:auto;padding-top:18px">
+              <button type="submit" class="btn btn-primary"
+                style="width:100%;justify-content:center;padding:11px;background:#16a34a;border-color:#16a34a;font-weight:700;box-shadow:0 4px 14px rgba(22,163,74,.35)">
+                <i class="ri-shield-keyhole-fill"></i> Create & Get Secure Install Command
+              </button>
+              <div style="font-size:11px;color:#15803d;text-align:center;margin-top:8px;font-weight:500">🔒 Secure curl
+                | bash with server-id + token • Expires in 15 min</div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <style>
+        @keyframes pulse {
+          0% {
+            box-shadow: 0 0 0 0 #bbf7d0
+          }
+
+          70% {
+            box-shadow: 0 0 0 6px rgba(187, 247, 208, 0)
+          }
+
+          100% {
+            box-shadow: 0 0 0 0 rgba(187, 247, 208, 0)
+          }
+        }
+
+        @media(max-width:860px) {
+          .connect-grid {
+            grid-template-columns: 1fr !important
+          }
+        }
+      </style>
+    </div>
+  </div>
+
+  <!-- STEP 2 MODAL - INSTALL COMMAND (KEPT EXACT SAME AS YOUR ORIGINAL) -->
+  <div id="installAgentModal"
+    style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.7);align-items:center;justify-content:center;z-index:10000">
+    <div class="card" style="width:560px;max-width:92vw">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <h3 style="margin:0"><i class="ri-terminal-box-line"></i> Install OpenCloud Agent</h3>
+        <button type="button" id="closeInstallBtn"
+          style="background:none;border:0;cursor:pointer;font-size:20px">&times;</button>
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:16px">Server <strong
+          id="installServerName">prod</strong> (<span id="installServerHost" class="mono">1.2.3.4</span>) saved as
+        DISCONNECTED. Run this on VPS.</p>
+      <div style="background:#0f172a;border-radius:8px;padding:12px;border:1px solid #1e293b">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:11px;text-transform:uppercase;color:#94a3b8;font-weight:600">Install Command</span>
+          <button type="button" id="copyBtn" class="btn" style="padding:4px 8px;font-size:12px">Copy</button>
+        </div>
+        <code id="installCommand" class="mono"
+          style="display:block;white-space:pre-wrap;word-break:break-all;font-size:12.5px;color:#e2e8f0;line-height:1.5"></code>
+      </div>
+      <div id="validationBox"
+        style="margin-top:14px;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px dashed var(--border)">
+        <div id="validationDot" style="width:10px;height:10px;border-radius:50%;background:#f0ab00"></div>
+        <div style="flex:1">
+          <div id="validationText" style="font-size:13px;font-weight:600">Waiting for agent...</div>
+          <div id="validationSub" style="font-size:11.5px;color:var(--muted)">Run command, then click Validate</div>
+        </div>
+        <button type="button" id="validateBtn" class="btn btn-primary"
+          style="padding:6px 12px;font-size:12.5px">Validate Connection</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <a id="goToServerLink" href="#" class="btn" style="flex:1;justify-content:center">Go to Server Details</a>
+        <button type="button" id="doneBtn" class="btn btn-primary" style="flex:1;justify-content:center">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Use window. so layout replace doesn't break it
+    window.currentServerId = null;
+    window.pollInterval = null;
+
+    function showModal(id) { const el = document.getElementById(id); if (el) { el.style.display = 'flex'; console.log('show', id); } }
+    function hideModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+
+    window.openConnectModal = function () { showModal('connectServerModal'); }
+    window.closeConnectModal = function () { hideModal('connectServerModal'); }
+    window.openInstallModal = function (id, host, name) {
+      window.currentServerId = id;
+      document.getElementById('installServerName').textContent = name || id;
+      document.getElementById('installServerHost').textContent = host || '';
+      const cp = window.location.hostname + ':9090';
+      document.getElementById('installCommand').textContent = `curl -sSL https://get.opencloud.dev/install.sh | sudo bash -s -- --server-id ${id} --control-plane ${cp}`;
+      document.getElementById('goToServerLink').href = '/servers/' + id;
+      document.getElementById('validationText').textContent = 'Waiting for agent...';
+      document.getElementById('validationSub').textContent = 'Run command on ' + host;
+      document.getElementById('validationDot').style.background = '#f0ab00';
+      showModal('installAgentModal');
+    }
+    window.closeInstallModal = function () {
+      hideModal('installAgentModal');
+      if (window.pollInterval) clearInterval(window.pollInterval);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('OpenCloud servers page loaded');
+      document.getElementById('openConnectBtn')?.addEventListener('click', window.openConnectModal);
+      document.getElementById('closeConnectBtn')?.addEventListener('click', window.closeConnectModal);
+      document.getElementById('closeInstallBtn')?.addEventListener('click', window.closeInstallModal);
+      document.getElementById('doneBtn')?.addEventListener('click', function () { window.closeInstallModal(); location.reload(); });
+      document.getElementById('copyBtn')?.addEventListener('click', function () {
+        const txt = document.getElementById('installCommand').textContent;
+        navigator.clipboard.writeText(txt).then(() => { this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 1500); });
+      });
+      document.getElementById('validateBtn')?.addEventListener('click', function () {
+        const id = window.currentServerId; if (!id) return;
+        this.textContent = 'Checking...'; this.disabled = true;
+        fetch('/api/v1/servers/' + id, { headers: { 'Accept': 'application/json' } })
+          .then(r => r.ok ? r.json() : { status: 'DISCONNECTED' })
+          .then(data => {
+            const status = (data.status || '').toString().toUpperCase();
+            if (status.includes('CONNECTED')) {
+              document.getElementById('validationDot').style.background = '#3e8635';
+              document.getElementById('validationText').textContent = 'Connected! Agent is live';
+              document.getElementById('validationSub').textContent = 'Heartbeat: ' + (data.lastHeartbeat || 'now');
+              document.getElementById('validationBox').style.background = '#f3faf2';
+              document.getElementById('validationBox').style.borderColor = '#3e8635';
+            } else {
+              document.getElementById('validationDot').style.background = '#c9190b';
+              document.getElementById('validationText').textContent = 'Not connected - ' + status;
+            }
+          })
+          .finally(() => { this.textContent = 'Validate Connection'; this.disabled = false; });
+      });
+      document.querySelectorAll('.install-link').forEach(a => {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.openInstallModal(this.dataset.id, this.dataset.host, this.dataset.name);
+        });
+      });
+      // click outside to close
+      document.getElementById('connectServerModal')?.addEventListener('click', function (e) { if (e.target === this) window.closeConnectModal(); });
+      document.getElementById('installAgentModal')?.addEventListener('click', function (e) { if (e.target === this) window.closeInstallModal(); });
+
+      document.getElementById('authType')?.addEventListener('change', function (e) {
+        const isKey = e.target.value === 'KEY';
+        document.getElementById('passwordField').style.display = isKey ? 'none' : 'block';
+        document.getElementById('keyField').style.display = isKey ? 'block' : 'none';
+      });
+
+      const params = new URLSearchParams(window.location.search);
+      const newId = params.get('newServerId');
+      if (newId) {
+        const card = document.querySelector(`.install-link[data-id="${newId}"]`);
+        if (card) window.openInstallModal(newId, card.dataset.host, card.dataset.name);
+        else window.openInstallModal(newId, '', newId);
+      }
+    });
+  </script>
+</div>
+
+</html>

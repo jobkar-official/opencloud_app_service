@@ -1,0 +1,48 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout('Overview', ~{::content})}">
+<div th:fragment="content">
+  <div class="grid grid-3">
+    <div class="card">
+      <div style="color:var(--muted);font-size:12px">TOTAL SERVERS</div>
+      <div style="font-size:28px;font-weight:700" th:text="${totalServers}">0</div>
+      <div style="font-size:13px;color:var(--muted)">gRPC agents connected</div>
+    </div>
+    <div class="card">
+      <div style="color:var(--muted);font-size:12px">LIVE DEPLOYMENTS</div>
+      <div style="font-size:28px;font-weight:700" th:text="${liveDeployments}">0</div>
+      <div style="font-size:13px;color:#3e8635">● healthy</div>
+    </div>
+    <div class="card">
+      <div style="color:var(--muted);font-size:12px">gRPC CONTROL PLANE</div>
+      <div style="font-size:16px;font-weight:600">:9090 operational</div>
+      <div class="mono" style="font-size:12px;color:var(--muted)">process-native PM2 / jar exec</div>
+    </div>
+  </div>
+  <div class="grid grid-2" style="margin-top:16px">
+    <div class="card">
+      <h3>Recent Deployments</h3>
+      <table class="table">
+        <tr th:each="d:${deployments}">
+          <td><i
+              th:class="${d.provider.name()=='GITHUB'?'ri-github-fill':(d.provider.name()=='GITLAB'?'ri-gitlab-fill':'ri-bitbucket-fill')}"></i>
+            <span th:text="${d.name}">api</span>
+          </td>
+          <td><span class="badge"
+              th:classappend="${d.status.name()=='LIVE'?'badge-live':(d.status.name()=='FAILED'?'badge-failed':'badge-building')}"
+              th:text="${d.status}">LIVE</span></td>
+        </tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Servers</h3>
+      <table class="table">
+        <tr th:each="s:${servers}">
+          <td th:text="${s.name}">vps-1</td>
+          <td th:text="${s.host}">1.2.3.4</td>
+          <td><span class="badge badge-live" th:text="${s.status}">CONNECTED</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+</html>

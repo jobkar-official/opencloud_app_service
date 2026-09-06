@@ -1,0 +1,56 @@
+
+syntax = "proto3";
+package opencloud.deploy.v1;
+option java_multiple_files = true;
+option java_package = "dev.opencloud.grpc";
+option java_outer_classname = "DeployProto";
+
+service DeployService {
+  rpc RegisterAgent (RegisterAgentRequest) returns (RegisterAgentResponse);
+  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+  rpc PullDeployment (PullDeploymentRequest) returns (PullDeploymentResponse);
+  rpc ReportDeployStatus (DeployStatusRequest) returns (DeployStatusResponse);
+  rpc StreamLogs (StreamLogsRequest) returns (stream LogChunk);
+}
+
+message RegisterAgentRequest {
+  string serverId = 1;
+  string agentVersion = 2;
+  string hostname = 3;
+}
+
+message RegisterAgentResponse {
+  bool accepted = 1;
+  string message = 2;
+}
+
+message HeartbeatRequest {
+  string serverId = 1;
+  string currentDeploymentId = 2;
+  string status = 3;
+}
+
+message HeartbeatResponse { bool ok = 1; }
+
+message PullDeploymentRequest { string serverId = 1; }
+message PullDeploymentResponse {
+  bool hasDeployment = 1;
+  string deploymentId = 2;
+  string repoUrl = 3;
+  string commitSha = 4;
+  string buildType = 5; // NODE or JAVA
+  map<string,string> envVars = 6;
+}
+
+message DeployStatusRequest {
+  string deploymentId = 1;
+  string serverId = 2;
+  string stage = 3; // BUILDING, DEPLOYING, LIVE, FAILED
+  string message = 4;
+  bool healthOk = 5;
+}
+
+message DeployStatusResponse { bool acknowledged = 1; }
+
+message StreamLogsRequest { string deploymentId = 1; }
+message LogChunk { string line = 1; int64 timestamp = 2; }

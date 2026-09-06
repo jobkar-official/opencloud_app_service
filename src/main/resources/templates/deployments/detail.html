@@ -1,0 +1,149 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(${deployment.name}, ~{::content})}">
+<div th:fragment="content">
+  <a th:href="@{/deployments}" style="color:var(--muted);font-size:13px">&larr; All deployments</a>
+
+  <div style="display:flex;align-items:center;gap:12px;margin-top:10px;border-bottom:1px solid var(--border);padding-bottom:18px">
+    <i th:class="${deployment.provider.name()=='GITHUB'?'ri-github-fill':(deployment.provider.name()=='GITLAB'?'ri-gitlab-fill':'ri-bitbucket-fill')}" style="font-size:22px"></i>
+    <h2 style="margin:0" th:text="${deployment.name}">opencloud-api</h2>
+    <span class="badge"
+          th:classappend="${deployment.status.name()=='LIVE'?'badge-live':(deployment.status.name()=='FAILED'?'badge-failed':'badge-building')}"
+          th:text="${deployment.status}">LIVE</span>
+  </div>
+  <div style="display:flex;gap:16px;margin-top:10px;font-size:13px;color:var(--muted);flex-wrap:wrap">
+    <span class="mono" th:text="${deployment.repoUrl}">https://github.com/org/repo</span>
+    <span th:text="'branch: ' + ${deployment.branch}">branch: main</span>
+    <span th:text="'on ' + (${deployment.server} != null ? ${deployment.server.name} : 'no server assigned')">on prod-us-east-1</span>
+  </div>
+
+  <div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-top:20px">
+    <button type="button" class="btn btn-ghost active" data-tab="core" data-tab-group="dep" style="border-radius:8px 8px 0 0;background:none">Core</button>
+    <button type="button" class="btn btn-ghost" data-tab="health" data-tab-group="dep" style="border-radius:8px 8px 0 0;background:none">Health</button>
+    <button type="button" class="btn btn-ghost" data-tab="logs" data-tab-group="dep" style="border-radius:8px 8px 0 0;background:none">Logs</button>
+    <button type="button" class="btn btn-ghost" data-tab="config" data-tab-group="dep" style="border-radius:8px 8px 0 0;background:none">Config</button>
+    <button type="button" class="btn btn-ghost" data-tab="settings" data-tab-group="dep" style="border-radius:8px 8px 0 0;background:none">Settings</button>
+  </div>
+
+  <div data-tab-panel="core" data-tab-group="dep" style="display:block;padding-top:20px">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:11.5px;color:var(--muted);text-transform:uppercase">Current commit</div>
+        <div class="mono" style="font-size:16px;font-weight:600;margin-top:4px" th:text="${deployment.commitSha ?: 'no deploy yet'}">a1b2c3d</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:4px" th:text="${deployment.lastDeployedAt ?: 'never deployed'}">2026-09-05T02:00:00Z</div>
+      </div>
+      <form th:action="@{'/deployments/' + ${deployment.id} + '/redeploy'}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="btn btn-primary"><i class="ri-refresh-line"></i> Redeploy latest</button>
+      </form>
+    </div>
+
+    <h3 style="margin-top:24px;font-size:13px;color:var(--muted);text-transform:uppercase">Version history</h3>
+    <div class="card" style="padding:0;margin-top:8px">
+      <table class="table">
+        <tr><th>Commit</th><th>Status</th><th>Deployed</th><th></th></tr>
+        <tr th:each="v : ${deployment.versions}">
+          <td class="mono" th:text="${v.commitSha}">a1b2c3d</td>
+          <td><span class="badge" th:classappend="${v.status.name()=='ACTIVE' or v.status.name()=='SUCCESS'?'badge-live':(v.status.name()=='ROLLED_BACK'?'badge-building':'badge-failed')}" th:text="${v.status}">ACTIVE</span></td>
+          <td style="font-size:12.5px;color:var(--muted)" th:text="${v.createdAt}">2026-09-05T02:00:00Z</td>
+          <td>
+            <button th:if="${v.status.name() != 'ACTIVE'}" type="button" class="btn btn-ghost" style="padding:4px 10px;font-size:12px"
+                    th:attr="data-rollback-url=@{'/api/v1/deployments/' + ${deployment.id} + '/rollback/' + ${v.id}}"
+                    onclick="rollback(this)">
+              <i class="ri-arrow-go-back-line"></i> Revert to this
+            </button>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(deployment.versions)}">
+          <td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No successful builds retained yet.</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div data-tab-panel="health" data-tab-group="dep" style="display:none;padding-top:20px">
+    <div class="grid grid-3">
+      <div class="card">
+        <div style="font-size:11.5px;color:var(--muted);text-transform:uppercase">Status</div>
+        <div style="margin-top:6px" th:text="${deployment.status}">LIVE</div>
+      </div>
+      <div class="card">
+        <div style="font-size:11.5px;color:var(--muted);text-transform:uppercase">Last deployed</div>
+        <div style="margin-top:6px;font-size:13px" th:text="${deployment.lastDeployedAt ?: 'never'}">2026-09-05T02:00:00Z</div>
+      </div>
+      <div class="card">
+        <div style="font-size:11.5px;color:var(--muted);text-transform:uppercase">Server</div>
+        <div style="margin-top:6px" th:text="${deployment.server != null ? deployment.server.name : 'unassigned'}">prod-us-east-1</div>
+      </div>
+    </div>
+    <p style="color:var(--muted);font-size:12.5px;margin-top:16px">
+      CPU/memory metrics stream from the agent over gRPC heartbeats but aren't persisted or
+      surfaced here yet -- that's the next piece to wire up on this tab.
+    </p>
+  </div>
+
+  <div data-tab-panel="logs" data-tab-group="dep" style="display:none;padding-top:20px">
+    <div class="card mono" style="background:#0f172a;color:#cbd5e1;min-height:200px;font-size:12.5px;line-height:1.8">
+      <p style="color:#64748b">-- log streaming --</p>
+      <p style="color:#94a3b8">
+        StreamLogs is defined in deploy.proto as a server-streaming RPC,
+        but this dashboard doesn't have a client wired up to consume and render it yet.
+        For now, tail logs directly on the server via the agent, or watch reportDeployStatus
+        calls in the application logs (logging.level.dev.opencloud=DEBUG).
+      </p>
+    </div>
+  </div>
+
+  <div data-tab-panel="config" data-tab-group="dep" style="display:none;padding-top:20px">
+    <div class="grid grid-2">
+      <div>
+        <h3 style="font-size:13px;color:var(--muted);text-transform:uppercase">Environment variables</h3>
+        <div class="card" style="padding:0;margin-top:8px">
+          <table class="table">
+            <tr th:each="e : ${deployment.envVars}">
+              <td class="mono" th:text="${e.key}">DATABASE_URL</td>
+              <td class="mono" th:text="${e.secret} ? '****' : ${e.value}">postgres://...</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(deployment.envVars)}">
+              <td style="text-align:center;color:var(--muted);padding:16px">No environment variables set.</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:13px;color:var(--muted);text-transform:uppercase">Build settings</h3>
+        <div class="card" style="margin-top:8px;font-size:13px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Repository</span><span class="mono" th:text="${deployment.repoUrl}">-</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Branch</span><span class="mono" th:text="${deployment.branch}">main</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Build type</span><span th:text="${deployment.buildType}">JAVA</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Provider</span><span th:text="${deployment.provider}">GITHUB</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-tab-panel="settings" data-tab-group="dep" style="display:none;padding-top:20px">
+    <div class="card" style="border-color:#f0c4bf;background:#faeae8;max-width:560px">
+      <h3 style="margin-top:0;color:#c9190b">Danger zone</h3>
+      <p style="color:#c9190b;font-size:13px">
+        Deleting this deployment stops the process on its server and removes its version
+        history. There is no undo yet -- deletion isn't wired to an endpoint from this
+        dashboard yet, so treat this as a placeholder until that API exists.
+      </p>
+      <button type="button" class="btn" style="background:#c9190b;color:#fff" disabled="disabled">Delete deployment</button>
+    </div>
+  </div>
+
+  <script>
+    async function rollback(btn){
+      if(!confirm('Roll back to this version?')) return;
+      btn.disabled = true;
+      try {
+        await api(btn.dataset.rollbackUrl, { method: 'POST' });
+        location.reload();
+      } catch(e) {
+        alert('Rollback failed: ' + e.message);
+        btn.disabled = false;
+      }
+    }
+  </script>
+</div>
+</html>

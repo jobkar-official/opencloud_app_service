@@ -1,0 +1,66 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(${server.name}, ~{::content})}">
+<div th:fragment="content">
+  <a th:href="@{/servers}" style="color:var(--muted);font-size:13px">&larr; All servers</a>
+
+  <div
+    style="display:flex;align-items:center;gap:12px;margin-top:10px;border-bottom:1px solid var(--border);padding-bottom:18px">
+    <h2 style="margin:0" th:text="${server.name}">prod-us-east-1</h2>
+    <span class="badge"
+      th:classappend="${server.status.name() == 'CONNECTED' ? 'badge-live' : (server.status.name() == 'CONNECTING' ? 'badge-building' : 'badge-failed')}"
+      th:text="${server.status}">CONNECTED</span>
+  </div>
+
+  <div style="display:flex;gap:20px;margin-top:12px;font-size:13px;color:var(--muted)">
+    <span class="mono" th:text="${server.host} + ':' + ${server.sshPort}">3.85.12.44:22</span>
+    <span th:text="'user: ' + ${server.username}">user: root</span>
+  </div>
+
+  <div class="grid grid-3" style="margin-top:20px">
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">TOTAL DEPLOYMENTS</div>
+      <div style="font-size:24px;font-weight:700;margin-top:4px" th:text="${server.totalDeployments}">2</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">AGENT VERSION</div>
+      <div style="font-size:16px;font-weight:600;margin-top:4px" th:text="${server.agentVersion ?: 'not reported yet'}">
+        v1.0.0</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">LAST HEARTBEAT</div>
+      <div style="font-size:14px;margin-top:4px" th:text="${server.lastHeartbeat ?: 'never'}">2026-09-05T03:00:00Z</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3 style="margin-top:0">Agent install command</h3>
+    <p style="color:var(--muted);font-size:13px">
+      SSH into this server and run this once. The agent registers with the gRPC control plane
+      on port <span class="mono">9090</span> and starts polling for deploy jobs -- no inbound port needs to be opened.
+    </p>
+    <div class="mono"
+      style="background:#0f172a;color:#a7f3d0;padding:12px 14px;border-radius:8px;font-size:12.5px;overflow-x:auto"
+      th:text="'curl -sSL https://get.opencloud.dev/install.sh | sudo bash -s -- --server-id ' + ${server.id}">
+      curl -sSL https://get.opencloud.dev/install.sh | sudo bash -s -- --server-id srv-1
+    </div>
+  </div>
+
+  <button type="button" class="btn btn-ghost" style="margin-top:16px"
+    th:attr="data-test-url=@{'/api/v1/servers/' + ${server.id} + '/test-connection'}" onclick="testConn(this)">
+    <i class="ri-refresh-line"></i> Test connection
+  </button>
+
+  <script>
+    async function testConn(btn) {
+      btn.disabled = true; btn.innerText = 'Checking...';
+      try {
+        await api(btn.dataset.testUrl, { method: 'POST' });
+        location.reload();
+      } catch (e) {
+        alert('Could not reach agent: ' + e.message);
+        btn.disabled = false; btn.innerHTML = '<i class="ri-refresh-line"></i> Test connection';
+      }
+    }
+  </script>
+</div>
+
+</html>

@@ -1,0 +1,62 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout('New Deployment', ~{::content})}">
+<div th:fragment="content">
+  <div class="card" style="max-width:900px;margin:auto">
+    <div style="height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:20px">
+      <div id="wizard-progress" style="height:100%;width:16%;background:var(--primary);transition:.3s"></div>
+    </div>
+    <form th:action="@{/deployments/new}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+      <input type="hidden" name="provider" value="GITHUB" />
+      <!-- Step 1: Provider with icons -->
+      <div class="wizard-step active">
+        <h2>Connect Repository</h2>
+        <p style="color:var(--muted)">Choose your Git provider. Real OAuth + webhook will be registered.</p>
+        <div class="grid grid-3" style="margin:16px 0">
+          <div data-provider="GITHUB" class="card selected" style="cursor:pointer;text-align:center;border-width:2px"><i
+              class="ri-github-fill" style="font-size:32px"></i>
+            <div style="font-weight:600;margin-top:8px">GitHub</div>
+            <div style="font-size:12px;color:var(--muted)">github.com</div>
+          </div>
+          <div data-provider="GITLAB" class="card" style="cursor:pointer;text-align:center;border-width:2px"><i
+              class="ri-gitlab-fill" style="font-size:32px;color:#fc6d26"></i>
+            <div style="font-weight:600;margin-top:8px">GitLab</div>
+            <div style="font-size:12px;color:var(--muted)">gitlab.com / self-hosted</div>
+          </div>
+          <div data-provider="BITBUCKET" class="card" style="cursor:pointer;text-align:center;border-width:2px"><i
+              class="ri-bitbucket-fill" style="font-size:32px;color:#2684ff"></i>
+            <div style="font-weight:600;margin-top:8px">Bitbucket</div>
+            <div style="font-size:12px;color:var(--muted)">bitbucket.org</div>
+          </div>
+        </div>
+        <label>Repository URL</label><input name="repoUrl" placeholder="https://github.com/org/repo" required />
+        <div style="display:flex;justify-content:end;margin-top:16px"><button type="button" class="btn btn-primary"
+            data-wizard-next>Continue <i class="ri-arrow-right-line"></i></button></div>
+      </div>
+      <!-- Step 2: Server -->
+      <div class="wizard-step">
+        <h2>Select Server (VPS)</h2>
+        <p style="color:var(--muted)">Deployment will run process-native via gRPC agent.</p>
+        <select name="serverId">
+          <option th:each="s:${servers}" th:value="${s.id}" th:text="${s.name} + ' — ' + ${s.host}"></option>
+        </select>
+        <label style="margin-top:12px">Build Type</label><select name="buildType">
+          <option value="NODE">Node (PM2)</option>
+          <option value="JAVA">Java (jar exec)</option>
+        </select>
+        <div style="display:flex;justify-content:space-between;margin-top:16px"><button type="button"
+            class="btn btn-ghost" data-wizard-prev>Back</button><button type="button" class="btn btn-primary"
+            data-wizard-next>Continue</button></div>
+      </div>
+      <!-- Step 3: Env -->
+      <div class="wizard-step">
+        <h2>Environment Variables</h2><textarea name="envVars" rows="6"
+          placeholder="PORT=3000&#10;NODE_ENV=production&#10;DATABASE_URL=postgres://..."></textarea>
+        <div style="display:flex;justify-content:space-between;margin-top:16px"><button type="button"
+            class="btn btn-ghost" data-wizard-prev>Back</button><button type="submit" class="btn btn-primary"><i
+              class="ri-rocket-2-line"></i> Create & Deploy (via gRPC)</button></div>
+      </div>
+    </form>
+  </div>
+</div>
+
+</html>
