@@ -16,6 +16,7 @@
 
   <div class="layout">
 
+    <!-- HEADER -->
     <header class="masthead">
 
       <div class="masthead-brand">
@@ -29,42 +30,73 @@
 
     </header>
 
-    <div class="body-row">
 
-      <aside class="sidebar" style="display:flex;flex-direction:column;min-height:calc(100vh - 56px);">
+    <!-- BODY -->
+    <div class="body-row" style="min-height:calc(100vh - 56px);">
+
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar" style="
+        width:280px;
+        min-width:280px;
+        max-width:280px;
+        flex:0 0 280px;
+        height:calc(100vh - 56px);
+        position:fixed;
+        left:0;
+        top:56px;
+        bottom:0;
+        display:flex;
+        flex-direction:column;
+        overflow-y:auto;
+        overflow-x:hidden;
+        box-sizing:border-box;
+        z-index:150;
+      ">
 
         <nav class="nav">
 
+          <!-- Dashboard -->
           <a th:href="@{/dashboard}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/dashboard') ? 'active' : ''}">
             <i class="ri-dashboard-line"></i>
             Home
           </a>
 
+
+          <!-- Servers -->
           <a th:href="@{/servers}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/servers') ? 'active' : ''}">
             <i class="ri-server-line"></i>
             Servers
           </a>
 
+
+          <!-- Deployments -->
           <a th:href="@{/deployments}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/deployments') ? 'active' : ''}">
             <i class="ri-rocket-2-line"></i>
             Deployment
           </a>
 
+
+          <!-- Users & Permissions -->
           <a th:href="@{/users}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/users') ? 'active' : ''}">
             <i class="ri-shield-user-line"></i>
             Permission
           </a>
 
+
+          <!-- Support -->
           <a th:href="@{/support}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/support') ? 'active' : ''}">
             <i class="ri-customer-service-2-line"></i>
             Support
           </a>
 
+
+          <!-- Account -->
           <a th:href="@{/account}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/account') ? 'active' : ''}">
             <i class="ri-user-settings-line"></i>
@@ -73,7 +105,13 @@
 
         </nav>
 
-        <div style="margin-top:auto;padding:0 16px 10px;">
+
+        <!-- LOGOUT -->
+        <div style="
+          margin-top:auto;
+          padding:0 16px 10px;
+          flex-shrink:0;
+        ">
 
           <form th:action="@{/logout}" method="post" style="margin:0;">
 
@@ -95,8 +133,13 @@
               cursor:pointer;
               box-shadow:0 2px 6px rgba(0,0,0,0.12);
               transition:all .15s ease;
-            " onmouseover="this.style.background='rgba(201,25,11,0.18)';this.style.borderColor='#C9190B';"
-              onmouseout="this.style.background='rgba(201,25,11,0.10)';this.style.borderColor='rgba(201,25,11,0.35)';">
+            " onmouseover="
+              this.style.background='rgba(201,25,11,0.18)';
+              this.style.borderColor='#C9190B';
+            " onmouseout="
+              this.style.background='rgba(201,25,11,0.10)';
+              this.style.borderColor='rgba(201,25,11,0.35)';
+            ">
 
               <i class="ri-logout-box-r-line" style="font-size:18px;"></i>
 
@@ -110,8 +153,20 @@
 
       </aside>
 
-      <main class="content-col">
 
+      <!-- MAIN CONTENT -->
+      <main class="content-col" style="
+        margin-left:280px;
+        width:calc(100% - 280px);
+        max-width:calc(100% - 280px);
+        min-width:0;
+        min-height:calc(100vh - 56px);
+        overflow-x:hidden;
+        box-sizing:border-box;
+      ">
+
+
+        <!-- PAGE HEADER -->
         <div class="page-header">
 
           <div class="breadcrumb">
@@ -120,19 +175,23 @@
             <span th:text="${title}">Overview</span>
           </div>
 
-          <h1 th:text="${title}">Overview</h1>
+          <h1 th:text="${title}">
+            Overview
+          </h1>
 
         </div>
 
+
+        <!-- PAGE CONTENT -->
         <div class="page-body" th:insert="${content}">
         </div>
+
 
       </main>
 
     </div>
 
   </div>
-
   <script th:src="@{/js/app.js}"></script>
 
 </body>
