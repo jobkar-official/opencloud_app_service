@@ -4,69 +4,137 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title th:text="${title} + ' — OpenCloud'">OpenCloud</title>
+
   <link rel="stylesheet" th:href="@{/css/main.css}" />
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css" />
 </head>
 
 <body>
+
   <div class="layout">
 
-    <!-- Masthead -->
     <header class="masthead">
+
       <div class="masthead-brand">
         <i class="ri-cloud-line"></i>
         OpenCloud
       </div>
+
       <div class="masthead-user">
         <span class="env-tag">Production</span>
-        <form th:action="@{/logout}" method="post">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-          <button type="submit" class="btn btn-ghost" style="background:transparent;border-color:#3c3f42;color:#d2d2d2">
-            <i class="ri-logout-box-r-line"></i> Logout
-          </button>
-        </form>
       </div>
+
     </header>
 
     <div class="body-row">
-      <!-- Left nav -->
-      <aside class="sidebar">
+
+      <aside class="sidebar" style="display:flex;flex-direction:column;min-height:calc(100vh - 56px);">
+
         <nav class="nav">
+
           <a th:href="@{/dashboard}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/dashboard') ? 'active' : ''}">
-            <i class="ri-dashboard-line"></i> Overview
+            <i class="ri-dashboard-line"></i>
+            Home
           </a>
+
           <a th:href="@{/servers}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/servers') ? 'active' : ''}">
-            <i class="ri-server-line"></i> Servers
+            <i class="ri-server-line"></i>
+            Servers
           </a>
+
           <a th:href="@{/deployments}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/deployments') ? 'active' : ''}">
-            <i class="ri-rocket-2-line"></i> Deployments
+            <i class="ri-rocket-2-line"></i>
+            Instances
           </a>
+
           <a th:href="@{/users}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/users') ? 'active' : ''}">
-            <i class="ri-team-line"></i> Users &amp; Permissions
+            <i class="ri-shield-user-line"></i>
+            Permission
           </a>
+
+          <a th:href="@{/support}"
+            th:classappend="${currentUri != null and #strings.contains(currentUri, '/support') ? 'active' : ''}">
+            <i class="ri-customer-service-2-line"></i>
+            Support
+          </a>
+
           <a th:href="@{/account}"
             th:classappend="${currentUri != null and #strings.contains(currentUri, '/account') ? 'active' : ''}">
-            <i class="ri-user-settings-line"></i> Account
+            <i class="ri-user-settings-line"></i>
+            Account
           </a>
+
         </nav>
+
+        <div style="margin-top:auto;padding:0 16px 10px;">
+
+          <form th:action="@{/logout}" method="post" style="margin:0;">
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <button type="submit" style="
+              width:100%;
+              display:flex;
+              align-items:center;
+              gap:10px;
+              padding:12px 14px;
+              border:1px solid rgba(201,25,11,0.35);
+              border-radius:5px;
+              background:rgba(201,25,11,0.10);
+              color:#C9190B;
+              font-family:inherit;
+              font-size:14px;
+              font-weight:600;
+              cursor:pointer;
+              box-shadow:0 2px 6px rgba(0,0,0,0.12);
+              transition:all .15s ease;
+            " onmouseover="this.style.background='rgba(201,25,11,0.18)';this.style.borderColor='#C9190B';"
+              onmouseout="this.style.background='rgba(201,25,11,0.10)';this.style.borderColor='rgba(201,25,11,0.35)';">
+
+              <i class="ri-logout-box-r-line" style="font-size:18px;"></i>
+
+              <span>Logout</span>
+
+            </button>
+
+          </form>
+
+        </div>
+
       </aside>
 
-      <!-- Main content column -->
       <main class="content-col">
+
         <div class="page-header">
-          <div class="breadcrumb">OpenCloud <span class="sep">/</span> <span th:text="${title}">Overview</span></div>
+
+          <div class="breadcrumb">
+            OpenCloud
+            <span class="sep">/</span>
+            <span th:text="${title}">Overview</span>
+          </div>
+
           <h1 th:text="${title}">Overview</h1>
+
         </div>
-        <div class="page-body" th:insert="${content}"></div>
+
+        <div class="page-body" th:insert="${content}">
+        </div>
+
       </main>
+
     </div>
+
   </div>
 
   <script th:src="@{/js/app.js}"></script>
+
 </body>
+
 </html>

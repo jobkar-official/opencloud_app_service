@@ -1,0 +1,800 @@
+html
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout('Support', ~{::content})}">
+
+<div th:fragment="content">
+
+    <style>
+        .support-page {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 8px 0 40px;
+        }
+
+        .support-header {
+            margin-bottom: 28px;
+        }
+
+        .support-header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
+
+        .support-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        /* Search */
+
+        .support-search {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .support-search input {
+            width: 100%;
+            height: 54px;
+            box-sizing: border-box;
+            padding: 0 52px 0 48px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--card);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .support-search input:focus {
+            border-color: #C9190B;
+            box-shadow: 0 0 0 3px rgba(201, 25, 11, .10);
+        }
+
+        .support-search .search-icon {
+            position: absolute;
+            left: 17px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 20px;
+            pointer-events: none;
+        }
+
+        .support-search .shortcut {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--muted);
+            font-size: 11px;
+            background: var(--surface);
+        }
+
+        /* Section */
+
+        .support-section {
+            margin-bottom: 32px;
+        }
+
+        .support-section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .support-section-title h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 650;
+            color: var(--text);
+        }
+
+        .support-section-title span {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* Help cards */
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        .help-card {
+            display: flex;
+            gap: 14px;
+            padding: 18px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--card);
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform .18s ease,
+                border-color .18s ease,
+                box-shadow .18s ease;
+        }
+
+        .help-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(201, 25, 11, .35);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+        }
+
+        .help-icon {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(201, 25, 11, .09);
+            color: #C9190B;
+            font-size: 20px;
+        }
+
+        .help-content {
+            min-width: 0;
+        }
+
+        .help-content h3 {
+            margin: 0 0 5px;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+        .help-content p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        /* Contact / ticket */
+
+        .support-columns {
+            display: grid;
+            grid-template-columns: 1.4fr .8fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .support-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--card);
+            padding: 22px;
+        }
+
+        .support-card h2 {
+            margin: 0 0 6px;
+            font-size: 17px;
+            font-weight: 650;
+            color: var(--text);
+        }
+
+        .support-card-description {
+            margin: 0 0 20px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: var(--surface);
+            color: var(--text);
+            outline: none;
+            font-family: inherit;
+            font-size: 13px;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        input.form-control {
+            height: 42px;
+            padding: 0 12px;
+        }
+
+        select.form-control {
+            height: 42px;
+            padding: 0 12px;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            padding: 12px;
+            resize: vertical;
+        }
+
+        .form-control:focus {
+            border-color: #C9190B;
+            box-shadow: 0 0 0 3px rgba(201, 25, 11, .08);
+        }
+
+        .ticket-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 18px;
+        }
+
+        .primary-button {
+            height: 40px;
+            padding: 0 17px;
+            border: 0;
+            border-radius: 8px;
+            background: #C9190B;
+            color: #fff;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s, transform .15s;
+        }
+
+        .primary-button:hover {
+            background: #a9160a;
+        }
+
+        .primary-button:active {
+            transform: translateY(1px);
+        }
+
+        /* Contact options */
+
+        .contact-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .contact-option:last-child {
+            border-bottom: 0;
+        }
+
+        .contact-option-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(201, 25, 11, .08);
+            color: #C9190B;
+            font-size: 17px;
+        }
+
+        .contact-option-content strong {
+            display: block;
+            color: var(--text);
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+
+        .contact-option-content span {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        /* Requests */
+
+        .requests-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--card);
+            overflow: hidden;
+        }
+
+        .request-row {
+            display: grid;
+            grid-template-columns: 110px 1fr 100px 85px;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .request-row:last-child {
+            border-bottom: 0;
+        }
+
+        .request-id {
+            color: var(--muted);
+            font-size: 12px;
+            font-family: 'Overpass Mono', monospace;
+        }
+
+        .request-title {
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 550;
+        }
+
+        .request-date {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .status {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: fit-content;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 650;
+        }
+
+        .status.open {
+            color: #9a3412;
+            background: #ffedd5;
+        }
+
+        .status.resolved {
+            color: #166534;
+            background: #dcfce7;
+        }
+
+        .empty-requests {
+            padding: 36px 20px;
+            text-align: center;
+        }
+
+        .empty-requests i {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--muted);
+            font-size: 28px;
+        }
+
+        .empty-requests strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .empty-requests span {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* Alert */
+
+        .support-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 12px 14px;
+            border-radius: 9px;
+            border: 1px solid rgba(201, 25, 11, .18);
+            background: rgba(201, 25, 11, .06);
+            color: var(--text);
+            font-size: 12px;
+        }
+
+        .support-alert i {
+            color: #C9190B;
+            font-size: 17px;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 900px) {
+            .help-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .support-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .support-page {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .help-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .request-row {
+                grid-template-columns: 1fr auto;
+                gap: 7px;
+            }
+
+            .request-id {
+                grid-column: 1;
+            }
+
+            .request-title {
+                grid-column: 1;
+            }
+
+            .request-date {
+                display: none;
+            }
+
+            .request-row .status {
+                grid-column: 2;
+                grid-row: 1 / span 2;
+            }
+        }
+    </style>
+
+
+    <div class="support-page">
+
+        <!-- Header -->
+        <div class="support-header">
+            <h1>Support</h1>
+            <p>Find answers, troubleshoot issues, or contact the OpenCloud support team.</p>
+        </div>
+
+
+        <!-- Search -->
+        <div class="support-search">
+            <i class="ri-search-line search-icon"></i>
+
+            <input type="search" id="supportSearch" placeholder="Search help articles, deployments, servers..."
+                autocomplete="off">
+
+            <span class="shortcut">⌘ K</span>
+        </div>
+
+
+        <!-- Error -->
+        <div th:if="${supportError}" class="support-alert">
+            <i class="ri-error-warning-line"></i>
+            <span th:text="${supportError}">
+                Something went wrong. Please try again.
+            </span>
+        </div>
+
+
+        <!-- Quick Help -->
+        <section class="support-section">
+
+            <div class="support-section-title">
+                <h2>Quick help</h2>
+                <span>Common topics</span>
+            </div>
+
+            <div class="help-grid">
+
+                <a href="#" class="help-card">
+                    <div class="help-icon">
+                        <i class="ri-rocket-2-line"></i>
+                    </div>
+
+                    <div class="help-content">
+                        <h3>Deployments</h3>
+                        <p>Deployment failures, build configuration, rollback and application status.</p>
+                    </div>
+                </a>
+
+
+                <a href="#" class="help-card">
+                    <div class="help-icon">
+                        <i class="ri-github-line"></i>
+                    </div>
+
+                    <div class="help-content">
+                        <h3>GitHub & Git</h3>
+                        <p>Repository access, OAuth connections, branches and source control.</p>
+                    </div>
+                </a>
+
+
+                <a href="#" class="help-card">
+                    <div class="help-icon">
+                        <i class="ri-server-line"></i>
+                    </div>
+
+                    <div class="help-content">
+                        <h3>Servers</h3>
+                        <p>Server setup, SSH connectivity, health checks and configuration.</p>
+                    </div>
+                </a>
+
+
+                <a href="#" class="help-card">
+                    <div class="help-icon">
+                        <i class="ri-settings-4-line"></i>
+                    </div>
+
+                    <div class="help-content">
+                        <h3>Build & Runtime</h3>
+                        <p>Node.js, Next.js, Java, PM2 and application runtime configuration.</p>
+                    </div>
+                </a>
+
+
+                <a href="#" class="help-card">
+                    <div class="help-icon">
+                        <i class="ri-file-list-3-line"></i>
+                    </div>
+
+                    <div class="help-content">
+                        <h3>Logs & Errors</h3>
+                        <p>Understand build logs, deployment logs and application errors.</p>
+                    </div>
+                </a>
+
+
+                <a href="#" class="help-card">
+                    <div class="help-icon">
+                        <i class="ri-shield-keyhole-line"></i>
+                    </div>
+
+                    <div class="help-content">
+                        <h3>Security & Access</h3>
+                        <p>Users, permissions, authentication, OAuth and access control.</p>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+
+        <!-- Contact -->
+        <section class="support-section">
+
+            <div class="support-columns">
+
+                <!-- Ticket -->
+                <div class="support-card">
+
+                    <h2>Still need help?</h2>
+
+                    <p class="support-card-description">
+                        Tell us what went wrong and our support team will help you resolve it.
+                    </p>
+
+                    <form th:action="@{/support/tickets}" method="post">
+
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+
+                            <input id="subject" name="subject" class="form-control" type="text"
+                                placeholder="What do you need help with?" required>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="category">Category</label>
+
+                            <select id="category" name="category" class="form-control" required>
+
+                                <option value="">Select a category</option>
+                                <option value="DEPLOYMENT">Deployment</option>
+                                <option value="GITHUB">GitHub / Git</option>
+                                <option value="SERVER">Server</option>
+                                <option value="BUILD">Build & Runtime</option>
+                                <option value="SECURITY">Security & Access</option>
+                                <option value="OTHER">Other</option>
+
+                            </select>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="message">Describe the issue</label>
+
+                            <textarea id="message" name="message" class="form-control"
+                                placeholder="Tell us what happened, what you expected, and any error message you received..."
+                                required></textarea>
+                        </div>
+
+
+                        <div class="ticket-footer">
+                            <button type="submit" class="primary-button">
+                                <i class="ri-send-plane-line"></i>
+                                &nbsp; Create ticket
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <!-- Contact options -->
+                <div class="support-card">
+
+                    <h2>Contact us</h2>
+
+                    <p class="support-card-description">
+                        Choose the best way to get assistance.
+                    </p>
+
+
+                    <div class="contact-option">
+
+                        <div class="contact-option-icon">
+                            <i class="ri-mail-line"></i>
+                        </div>
+
+                        <div class="contact-option-content">
+                            <strong>Email support</strong>
+                            <span>Get help from our support team</span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="contact-option">
+
+                        <div class="contact-option-icon">
+                            <i class="ri-book-open-line"></i>
+                        </div>
+
+                        <div class="contact-option-content">
+                            <strong>Documentation</strong>
+                            <span>Read guides and deployment docs</span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="contact-option">
+
+                        <div class="contact-option-icon">
+                            <i class="ri-github-line"></i>
+                        </div>
+
+                        <div class="contact-option-content">
+                            <strong>GitHub</strong>
+                            <span>Report technical issues</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Support Requests -->
+        <section class="support-section">
+
+            <div class="support-section-title">
+                <h2>Your support requests</h2>
+                <span th:text="${tickets != null ? tickets.size() + ' requests' : '0 requests'}">
+                    0 requests
+                </span>
+            </div>
+
+
+            <div class="requests-card">
+
+                <!-- Tickets available -->
+                <div th:if="${tickets != null and !tickets.isEmpty()}">
+
+                    <div class="request-row" th:each="ticket : ${tickets}">
+
+                        <span class="request-id" th:text="${ticket.id}">
+                            #OC-1024
+                        </span>
+
+                        <span class="request-title" th:text="${ticket.subject}">
+                            Deployment failed
+                        </span>
+
+                        <span class="request-date" th:text="${ticket.createdAt}">
+                            Today
+                        </span>
+
+                        <span class="status open" th:text="${ticket.status}">
+                            Open
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Empty state -->
+                <div th:if="${tickets == null or tickets.isEmpty()}" class="empty-requests">
+
+                    <i class="ri-chat-smile-3-line"></i>
+
+                    <strong>No support requests yet</strong>
+
+                    <span>
+                        If you run into a problem, create a support ticket above.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <script>
+        (function () {
+
+            const search = document.getElementById('supportSearch');
+            const cards = document.querySelectorAll('.help-card');
+
+            if (!search) {
+                return;
+            }
+
+            search.addEventListener('input', function () {
+
+                const query = this.value
+                    .trim()
+                    .toLowerCase();
+
+                cards.forEach(function (card) {
+
+                    const text = card.innerText.toLowerCase();
+
+                    card.style.display =
+                        !query || text.includes(query)
+                            ? ''
+                            : 'none';
+
+                });
+
+            });
+
+
+            document.addEventListener('keydown', function (event) {
+
+                if (
+                    (event.metaKey || event.ctrlKey) &&
+                    event.key.toLowerCase() === 'k'
+                ) {
+
+                    event.preventDefault();
+                    search.focus();
+
+                }
+
+            });
+
+        })();
+    </script>
+
+</div>
+
+</html>

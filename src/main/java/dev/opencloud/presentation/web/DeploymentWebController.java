@@ -204,11 +204,11 @@ public class DeploymentWebController {
    */
   @PostMapping("/new")
   public String create(
-      @RequestParam String repoUrl,
-      @RequestParam String provider,
-      @RequestParam String serverId,
-      @RequestParam String buildType,
-      @RequestParam(required = false) String envVars) {
+      @RequestParam(name = "repoUrl") String repoUrl,
+      @RequestParam(name = "provider") String provider,
+      @RequestParam(name = "serverId") String serverId,
+      @RequestParam(name = "buildType") String buildType,
+      @RequestParam(name = "envVars", required = false) String envVars) {
 
     Deployment deployment = new Deployment();
 
@@ -260,7 +260,7 @@ public class DeploymentWebController {
    */
   @GetMapping("/{id}")
   public String detail(
-      @PathVariable String id,
+      @PathVariable("id") String id,
       Model model) {
 
     model.addAttribute(
@@ -275,7 +275,7 @@ public class DeploymentWebController {
    */
   @PostMapping("/{id}/redeploy")
   public String redeploy(
-      @PathVariable String id) {
+      @PathVariable("id") String id) {
 
     orchestrator.triggerDeploy(id, null);
 
